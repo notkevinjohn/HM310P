@@ -106,9 +106,10 @@ class HM310P():
 if __name__ == "__main__":
     supply = HM310P()
     supply.set_voltage(0)
-    for i in range(0,10):
-        supply.power_on()
-        supply.set_voltage(i/10*5)
+    supply.power_on()
+    time.sleep(5)  
+    for i in range(0,101):
+        supply.set_voltage(i/100*5)
         time.sleep(3)
-        supply.power_off()
-        time.sleep(3)
+        
+    supply.power_off()

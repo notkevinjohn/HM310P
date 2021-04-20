@@ -101,7 +101,67 @@ class HM310P():
             return True
         except:
             return "Error"
+    
+############################
+#### Current Management ####
+############################  
+    def set_current(self, current):
+        r = 0
+        value = "Error"
+        while r <= self.rDepth:
+            value = self.write_current(current)
+            if not value == "Error":
+                return value
+            r += 1
+            time.sleep(0.001)
+        return False
 
+    def write_current(self, current):
+        try:
+            self.supply.write_register(49, current, 2)
+            return True
+        except:
+            return "Error"
+
+###############################
+#### Protection Management ####
+###############################
+    
+    def set_overvoltageprotection(self, voltage):
+        r = 0
+        value = "Error"
+        while r <= self.rDepth:
+            value = self.write_overvoltageprotection(voltage)
+            if not value == "Error":
+                return value
+            r += 1
+            time.sleep(0.001)
+        return False
+
+    def write_overvoltageprotection(self, voltage):
+        try:
+            self.supply.write_register(32, voltage, 2)
+            return True
+        except:
+            return "Error"
+
+    def set_overcurrentprotection(self, current):
+        r = 0
+        value = "Error"
+        while r <= self.rDepth:
+            value = self.write_overcurrentprotection(current * 10)
+            if not value == "Error":
+                return value
+            r += 1
+            time.sleep(0.001)
+        return False
+
+    def write_overcurrentprotection(self, current):
+        try:
+            self.supply.write_register(33, current, 2)
+            return True
+        except:
+            return "Error"
 
 if __name__ == "__main__":
     supply = HM310P()

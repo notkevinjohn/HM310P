@@ -32,7 +32,7 @@ class HM310P():
 
     # wrapper
     def __rtu_template(self, func):
-        def wrapper(*argv):
+        def wrapper(argv=0):
             r = 0
             value = "Error"
             while r <= self.rDepth:
@@ -49,14 +49,14 @@ class HM310P():
     #### Power Management ####
     ##########################
 
-    def get_power(self):
+    def get_power(self, argv=0):
         return self.supply.read_register(1, 0)
 
-    def power_on(self):
-        return self.set_power(1)
+    def power_on(self, argv=0):
+        self.set_power(1)
 
-    def power_off(self):
-        return self.set_power(0)
+    def power_off(self, argv=0):
+        self.set_power(0)
 
     def set_power(self, status):
         return self.supply.write_register(1, status, 0)
@@ -65,10 +65,10 @@ class HM310P():
     #### Voltage Management ####
     ############################
 
-    def get_voltage(self):
+    def get_voltage(self, argv=0):
         return self.supply.read_register(16, 2)
 
-    def get_set_voltage(self):
+    def get_set_voltage(self, argv=0):
         return self.supply.read_register(48, 2)
 
     def set_voltage(self, voltage):
@@ -78,10 +78,10 @@ class HM310P():
     #### Current Management ####
     ############################
 
-    def get_current(self):
+    def get_current(self, argv=0):
         return self.supply.read_register(17, 2)
 
-    def get_set_current(self):
+    def get_set_current(self, argv=0):
         return self.supply.read_register(49, 2)
 
     def set_current(self, current):
@@ -91,10 +91,10 @@ class HM310P():
     #### Protection Management ####
     ###############################
 
-    def get_set_overvoltageprotection(self):
+    def get_set_overvoltageprotection(self, argv=0):
         return self.supply.read_register(32, 2)
 
-    def get_set_overcurrentprotection(self):
+    def get_set_overcurrentprotection(self, argv=0):
         return self.supply.read_register(33, 2)
 
     def set_overvoltageprotection(self, voltage):

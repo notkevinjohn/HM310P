@@ -53,10 +53,10 @@ class HM310P():
         return self.supply.read_register(1, 0)
 
     def power_on(self):
-        self.set_power(1)
+        return self.set_power(1)
 
     def power_off(self):
-        self.set_power(0)
+        return self.set_power(0)
 
     def set_power(self, status):
         return self.supply.write_register(1, status, 0)

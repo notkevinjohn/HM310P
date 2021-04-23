@@ -39,7 +39,7 @@ class HM310P():
                 try:
                     value = func(*argv)
                     return value
-                except:
+                except IOError:
                     r += 1
                     time.sleep(0.001)
             return False
@@ -79,13 +79,13 @@ class HM310P():
     ############################
 
     def get_current(self, *argv):
-        return self.supply.read_register(17, 2)
+        return self.supply.read_register(17, 3)
 
     def get_set_current(self, *argv):
-        return self.supply.read_register(49, 2)
+        return self.supply.read_register(49, 3)
 
     def set_current(self, current):
-        return self.supply.write_register(49, current, 2)
+        return self.supply.write_register(49, current, 3)
 
     ###############################
     #### Protection Management ####
@@ -95,19 +95,23 @@ class HM310P():
         return self.supply.read_register(32, 2)
 
     def get_set_overcurrentprotection(self, *argv):
-        return self.supply.read_register(33, 2)
+        return self.supply.read_register(33, 3)
 
     def set_overvoltageprotection(self, voltage):
         return self.supply.write_register(32, voltage, 2)
 
     def set_overcurrentprotection(self, current):
-        return self.supply.write_register(33, current, 2)
+        return self.supply.write_register(33, current, 3)
 
 
 if __name__ == "__main__":
     supply = HM310P()
     print(supply.get_power())
     supply.power_on()
-    print(supply.get_power())
-    time.sleep(5)
+    supply.set_current(5)
+    time.sleep(2)
+    print(supply.get_voltage())
+    supply.set_voltage(3)
+    supply.set_overcurrentprotection(5)
+    time.sleep(2)
     supply.power_off()

@@ -109,13 +109,14 @@ class HM310P():
         self.set_data(33, current, 3)
 
     def set_overpowerprotection(self, watt):
+        watt = watt * 0.01
         self.set_data(0x22, (watt & 0xffff0000) >> 16, 0)
         self.set_data(0x23, watt & 0x0000ffff, 0)
 
     def get_set_overpowerprotection(self):
-        return (self.get_data(0x22, 0) << 16) + self.get_data(0x23, 0)
+        return ((self.get_data(0x22, 0) << 16) + self.get_data(0x23, 0)) * 0.01
 
-    def get_protection_on(self, *argv):
+    def get_protection_on(self):
         return self.get_data(0x02, 0)
 
     def get_overvoltageprotection(self):
@@ -140,10 +141,20 @@ class HM310P():
     def get_set_communicationaddress(self):
         return self.get_data(0x9999, 0)
 
+    # Power supply specification (first half V, second half A)
+    def get_specification(self):
+        return self.get_data(0x3, 0)
+
+    def get_tailclassification(self):
+        return self.get_data(0x4, 0)
+    
+    def get_decimalpointdigitcopacity(self):
+        return self.get_data(0x5, 0)
+
 
 if __name__ == "__main__":
     supply = HM310P()
     supply.power_on()
     time.sleep(2)
-    print(supply.get_watt())
+    print(supply.get_decimalpointdigitcopacity())
     supply.power_off()

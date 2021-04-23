@@ -109,7 +109,7 @@ class HM310P():
         self.set_data(33, current, 3)
 
     def set_overpowerprotection(self, watt):
-        watt = watt * 0.01
+        watt = int(watt * 10)
         self.set_data(0x22, (watt & 0xffff0000) >> 16, 0)
         self.set_data(0x23, watt & 0x0000ffff, 0)
 

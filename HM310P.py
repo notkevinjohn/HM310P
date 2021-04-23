@@ -32,12 +32,12 @@ class HM310P():
 
     # wrapper
     def __rtu_template(self, func):
-        def wrapper(argv=0):
+        def wrapper(*argv):
             r = 0
             value = "Error"
             while r <= self.rDepth:
                 try:
-                    value = func(argv)
+                    value = func(*argv)
                     return value
                 except:
                     r += 1
@@ -49,13 +49,13 @@ class HM310P():
     #### Power Management ####
     ##########################
 
-    def get_power(self, argv=0):
+    def get_power(self, *argv):
         return self.supply.read_register(1, 0)
 
-    def power_on(self, argv=0):
+    def power_on(self, *argv):
         self.set_power(1)
 
-    def power_off(self, argv=0):
+    def power_off(self, *argv):
         self.set_power(0)
 
     def set_power(self, status):
@@ -65,10 +65,10 @@ class HM310P():
     #### Voltage Management ####
     ############################
 
-    def get_voltage(self, argv=0):
+    def get_voltage(self, *argv):
         return self.supply.read_register(16, 2)
 
-    def get_set_voltage(self, argv=0):
+    def get_set_voltage(self, *argv):
         return self.supply.read_register(48, 2)
 
     def set_voltage(self, voltage):
@@ -78,10 +78,10 @@ class HM310P():
     #### Current Management ####
     ############################
 
-    def get_current(self, argv=0):
+    def get_current(self, *argv):
         return self.supply.read_register(17, 2)
 
-    def get_set_current(self, argv=0):
+    def get_set_current(self, *argv):
         return self.supply.read_register(49, 2)
 
     def set_current(self, current):
@@ -91,10 +91,10 @@ class HM310P():
     #### Protection Management ####
     ###############################
 
-    def get_set_overvoltageprotection(self, argv=0):
+    def get_set_overvoltageprotection(self, *argv):
         return self.supply.read_register(32, 2)
 
-    def get_set_overcurrentprotection(self, argv=0):
+    def get_set_overcurrentprotection(self, *argv):
         return self.supply.read_register(33, 2)
 
     def set_overvoltageprotection(self, voltage):

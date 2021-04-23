@@ -17,18 +17,8 @@ class HM310P():
         self.supply.serial.bytesize = 8
         self.supply.timeout = 0.5
         # functions using template
-        self.get_power = self.__rtu_template(self.get_power)
-        self.set_power = self.__rtu_template(self.set_power)
-        self.get_voltage = self.__rtu_template(self.get_voltage)
-        self.get_set_voltage = self.__rtu_template(self.get_set_voltage)
-        self.set_voltage = self.__rtu_template(self.set_voltage)
-        self.get_current = self.__rtu_template(self.get_current)
-        self.get_set_current = self.__rtu_template(self.get_set_current)
-        self.set_current = self.__rtu_template(self.set_current)
-        self.get_set_overvoltageprotection = self.__rtu_template(self.get_set_overvoltageprotection)
-        self.get_set_overcurrentprotection = self.__rtu_template(self.get_set_overcurrentprotection)
-        self.set_overvoltageprotection = self.__rtu_template(self.set_overvoltageprotection)
-        self.set_overcurrentprotection = self.__rtu_template(self.set_overcurrentprotection)
+        self.get_data = self.__rtu_template(self.get_data)
+        self.set_data = self.__rtu_template(self.set_data)
 
     # wrapper
     def __rtu_template(self, func):
@@ -45,73 +35,115 @@ class HM310P():
             return False
         return wrapper
 
+    # read function
+    def get_data(self, *argv):
+        return self.supply.read_register(*argv)
+
+    # set function
+    def set_data(self, *argv):
+        return self.supply.write_register(*argv)
+
     ##########################
     #### Power Management ####
     ##########################
 
-    def get_power(self, *argv):
-        return self.supply.read_register(1, 0)
+    def get_power(self):
+        return self.get_data(1, 0)
 
-    def power_on(self, *argv):
+    def power_on(self):
         self.set_power(1)
 
-    def power_off(self, *argv):
+    def power_off(self):
         self.set_power(0)
 
     def set_power(self, status):
-        return self.supply.write_register(1, status, 0)
+        self.set_data(1, status, 0)
 
     ############################
     #### Voltage Management ####
     ############################
 
-    def get_voltage(self, *argv):
-        return self.supply.read_register(16, 2)
+    def get_voltage(self):
+        return self.get_data(16, 2)
 
-    def get_set_voltage(self, *argv):
-        return self.supply.read_register(48, 2)
+    def get_set_voltage(self):
+        return self.get_data(48, 2)
 
     def set_voltage(self, voltage):
-        return self.supply.write_register(48, voltage, 2)
+        self.set_data(48, voltage, 2)
 
     ############################
     #### Current Management ####
     ############################
 
-    def get_current(self, *argv):
-        return self.supply.read_register(17, 3)
+    def get_current(self):
+        return self.get_data(17, 3)
 
-    def get_set_current(self, *argv):
-        return self.supply.read_register(49, 3)
+    def get_set_current(self):
+        return self.get_data(49, 3)
 
     def set_current(self, current):
-        return self.supply.write_register(49, current, 3)
+        self.set_data(49, current, 3)
+
+    #########################
+    #### Watt Management ####
+    #########################
+
+    def get_watt(self):
+        return ((self.get_data(0x12, 0) << 16) + self.get_data(0x13, 0)) * 0.001
 
     ###############################
     #### Protection Management ####
     ###############################
 
-    def get_set_overvoltageprotection(self, *argv):
-        return self.supply.read_register(32, 2)
+    def get_set_overvoltageprotection(self):
+        return self.get_data(32, 2)
 
-    def get_set_overcurrentprotection(self, *argv):
-        return self.supply.read_register(33, 3)
+    def get_set_overcurrentprotection(self):
+        return self.get_data(33, 3)
 
     def set_overvoltageprotection(self, voltage):
-        return self.supply.write_register(32, voltage, 2)
+        self.set_data(32, voltage, 2)
 
     def set_overcurrentprotection(self, current):
-        return self.supply.write_register(33, current, 3)
+        self.set_data(33, current, 3)
+
+    def set_overpowerprotection(self, watt):
+        self.set_data(0x22, (watt & 0xffff0000) >> 16, 0)
+        self.set_data(0x23, watt & 0x0000ffff, 0)
+
+    def get_set_overpowerprotection(self):
+        return (self.get_data(0x22, 0) << 16) + self.get_data(0x23, 0)
+
+    def get_protection_on(self, *argv):
+        return self.get_data(0x02, 0)
+
+    def get_overvoltageprotection(self):
+        return self.get_protection_on() & 0b0001
+
+    def get_overcurrentprotection(self):
+        return self.get_protection_on() & 0b0010
+
+    def get_overpowerprotection(self):
+        return self.get_protection_on() & 0b0010
+
+    def get_overtemperaturprotection(self):
+        return self.get_protection_on() & 0b0100
+
+    def get_shortcircuitprotection(self):
+        return self.get_protection_on() & 0b1000
+
+    # communication Waning: do only if you know what you doing.
+    def set_communicationaddress(self, address):
+        self.set_data(0x9999, address, 0)
+
+    def get_set_communicationaddress(self):
+        return self.get_data(0x9999, 0)
 
 
 if __name__ == "__main__":
     supply = HM310P()
-    print(supply.get_power())
     supply.power_on()
-    supply.set_current(5)
     time.sleep(2)
-    print(supply.get_voltage())
-    supply.set_voltage(3)
-    supply.set_overcurrentprotection(5)
-    time.sleep(2)
+    print(supply.get_watt())
     supply.power_off()

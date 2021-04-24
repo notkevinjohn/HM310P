@@ -5,17 +5,17 @@ import serial
 import time
 
 
-class HM310P():
-    rDepth = 100
+class HM310P:
 
-    def __init__(self):
-        self.supply = minimalmodbus.Instrument('COM4', 1, minimalmodbus.MODE_RTU)
+    def __init__(self, t_port='/dev/dcpowersupply', t_address=1):
+        self.supply = minimalmodbus.Instrument(t_port, t_address, minimalmodbus.MODE_RTU)
         self.supply.serial.baudrate = 9600
         self.supply.serial.startbits = 1
         self.supply.serial.stopbits = 1
         self.supply.serial.parity = serial.PARITY_NONE
         self.supply.serial.bytesize = 8
         self.supply.timeout = 0.5
+        self.rDepth = 50
         # functions using template
         self.get_data = self.__rtu_template(self.get_data)
         self.set_data = self.__rtu_template(self.set_data)
@@ -24,7 +24,6 @@ class HM310P():
     def __rtu_template(self, func):
         def wrapper(*argv):
             r = 0
-            value = "Error"
             while r <= self.rDepth:
                 try:
                     value = func(*argv)
@@ -43,6 +42,17 @@ class HM310P():
     def set_data(self, *argv):
         return self.supply.write_register(*argv)
 
+    # sets functions to global (some don't work(only red))
+    def _do_global(self, func, *argv):
+        copy_address = self.supply.address
+        self.supply.address = 0
+        copy = self.rDepth
+        self.rDepth = 10
+        value = func(*argv)
+        self.rDepth = copy
+        self.supply.address = copy_address
+        return value
+
     ##########################
     #### Power Management ####
     ##########################
@@ -53,11 +63,20 @@ class HM310P():
     def power_on(self):
         self.set_power(1)
 
+    def global_power_on(self):
+        self.set_global_power(1)
+
     def power_off(self):
         self.set_power(0)
 
+    def global_power_off(self):
+        self.set_global_power(0)
+
     def set_power(self, status):
         self.set_data(1, status, 0)
+
+    def set_global_power(self, status):
+        self._do_global(self.set_power, status)
 
     ############################
     #### Voltage Management ####
@@ -147,14 +166,26 @@ class HM310P():
 
     def get_tailclassification(self):
         return self.get_data(0x4, 0)
-    
+
     def get_decimalpointdigitcopacity(self):
         return self.get_data(0x5, 0)
+
+    # master config
+    def master_get_slave_addres(self):
+        return self.supply.address
+
+    def master_set_slave_addres(self, t_address):
+        self.supply.address = t_address
 
 
 if __name__ == "__main__":
     supply = HM310P()
     supply.power_on()
-    time.sleep(2)
-    print(supply.get_decimalpointdigitcopacity())
+    print("current client address: " + str(supply.get_set_communicationaddress()))  # prints current address
+    supply.set_communicationaddress(2)  # you power supply form address 1 is now address 2
+    supply.master_set_slave_addres(2)  # sets master to talk to address 2
     supply.power_off()
+    time.sleep(2)
+    print("resetting changes")
+    supply.set_communicationaddress(1)  # sets power supply form address 2 to address 1
+    supply.master_set_slave_addres(1)  # resets master to address 1
